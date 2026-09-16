@@ -3,22 +3,22 @@
   "description": "Classic Skype / Windows Phone 7-8 Metro inspired theme with Segoe UI typography.",
   "authors": [
     {
-      "name": "blaze81",
+      "name": "yumii",
       "id": "1133815605389168792"
     }
   ],
   "semanticColors": {
     "HEADER_PRIMARY": [
-      "#FFFFFF"
+      "#000000"
     ],
     "HEADER_SECONDARY": [
-      "#B3B3B3"
+      "#4D4D4D"
     ],
     "TEXT_NORMAL": [
-      "#FFFFFF"
+      "#000000"
     ],
     "TEXT_MUTED": [
-      "#B3B3B3"
+      "#4D4D4D"
     ],
     "INTERACTIVE_NORMAL": [
       "#00AFF0"
@@ -27,7 +27,7 @@
       "#0078D7"
     ],
     "INTERACTIVE_ACTIVE": [
-      "#FFFFFF"
+      "#000000"
     ],
     "INTERACTIVE_MUTED": [
       "#666666"
@@ -90,10 +90,10 @@
       "#1E1E1E"
     ],
     "CHANNEL_TEXT_AREA_PLACEHOLDER": [
-      "#808080"
+      "#666666"
     ],
     "CHANNELS_DEFAULT": [
-      "#B3B3B3"
+      "#4D4D4D"
     ],
     "TEXT_LINK": [
       "#00AFF0"
@@ -105,7 +105,7 @@
       "#2B2B2B"
     ],
     "CHANNEL_ICON": [
-      "#FFFFFF"
+      "#000000"
     ],
     "CHAT_BACKGROUND": [
       "#000000"
@@ -201,6 +201,7 @@
   },
   "plus": {
     "version": "0",
+    "iconpack": "solarbroken",
     "mentionLineColor": "#00AFF0",
     "customOverlays": true,
     "icons": {
@@ -386,20 +387,20 @@
       "NitroWheelIcon": "#8661C5",
       "LaptopPhoneIcon": "#8661C5",
       "StatusStreaming": "#8661C5",
-      "debug": "#FFFFFF",
-      "Friends": "#FFFFFF",
-      "GroupIcon": "#FFFFFF",
-      "ic_badge_staff": "#FFFFFF",
-      "ic_friends_list_24px": "#FFFFFF",
-      "ic_friend_wave_24px": "#FFFFFF",
-      "ic_group_dm": "#FFFFFF",
-      "ic_members": "#FFFFFF",
-      "ic_members_24px": "#FFFFFF",
-      "ic_person_waving": "#FFFFFF",
-      "ic_profile_24px": "#FFFFFF",
-      "ic_voice_settings_24px": "#FFFFFF",
-      "CircleInformationIcon": "#FFFFFF",
-      "CircleInformationIcon-primary": "#FFFFFF",
+      "debug": "#000000",
+      "Friends": "#000000",
+      "GroupIcon": "#000000",
+      "ic_badge_staff": "#000000",
+      "ic_friends_list_24px": "#000000",
+      "ic_friend_wave_24px": "#000000",
+      "ic_group_dm": "#000000",
+      "ic_members": "#000000",
+      "ic_members_24px": "#000000",
+      "ic_person_waving": "#000000",
+      "ic_profile_24px": "#000000",
+      "ic_voice_settings_24px": "#000000",
+      "CircleInformationIcon": "#000000",
+      "CircleInformationIcon-primary": "#000000",
       "StatusMobileOnline": "#80CC28",
       "StatusOnline": "#80CC28",
       "ic_check__overlay": "#2B2B2B",
@@ -408,7 +409,7 @@
       "ic_radio_square_24px": "#80CC28",
       "ic_radio_square_checked_24px": "#80CC28",
       "ic_radio_square_checked_24px__overlay": "#2B2B2B",
-      "ic_reactions_white_16px": "#FFFFFF",
+      "ic_reactions_white_16px": "#000000",
       "ic_selection_checked_24px__overlay": "#2B2B2B"
     }
   },
