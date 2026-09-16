@@ -33,40 +33,40 @@
       "#666666"
     ],
     "BACKGROUND_PRIMARY": [
-      "#000000"
+      "#FFFFFF"
     ],
     "BACKGROUND_SECONDARY": [
-      "#1E1E1E"
+      "#FFFFFF"
     ],
     "BACKGROUND_SECONDARY_ALT": [
-      "#2B2B2B"
+      "#F5F5F5"
     ],
     "BACKGROUND_TERTIARY": [
-      "#2B2B2B"
+      "#EDEDED"
     ],
     "BACKGROUND_ACCENT": [
       "#00AFF0"
     ],
     "BACKGROUND_FLOATING": [
-      "#1E1E1E"
+      "#FFFFFF"
     ],
     "BACKGROUND_MOBILE_PRIMARY": [
-      "#000000"
+      "#FFFFFF"
     ],
     "BG_BASE_TERTIARY": [
-      "#000000"
+      "#FFFFFF"
     ],
     "BACKGROUND_MOBILE_SECONDARY": [
-      "#1E1E1E"
+      "#FFFFFF"
     ],
     "BACKGROUND_NESTED_FLOATING": [
-      "#2B2B2B"
+      "#F5F5F5"
     ],
     "BACKGROUND_MESSAGE_HOVER": [
-      "#0078D7"
+      "#E6F7FD"
     ],
     "BACKGROUND_MODIFIER_HOVER": [
-      "#2B2B2B"
+      "#EDEDED"
     ],
     "BACKGROUND_MODIFIER_ACTIVE": [
       "#0078D7"
@@ -75,7 +75,7 @@
       "#00AFF0"
     ],
     "BACKGROUND_MODIFIER_ACCENT": [
-      "#1E1E1E"
+      "#EDEDED"
     ],
     "SCROLLBAR_THIN_THUMB": [
       "#666666"
@@ -84,13 +84,13 @@
       "transparent"
     ],
     "SCROLLBAR_AUTO_THUMB": [
-      "#666666"
+      "#B3B3B3"
     ],
     "SCROLLBAR_AUTO_TRACK": [
-      "#1E1E1E"
+      "#EDEDED"
     ],
     "CHANNEL_TEXT_AREA_PLACEHOLDER": [
-      "#666666"
+      "#E6F7FD"
     ],
     "CHANNELS_DEFAULT": [
       "#4D4D4D"
@@ -102,31 +102,31 @@
       "#E81123"
     ],
     "KEYBOARD": [
-      "#2B2B2B"
+      "#FFFFFF"
     ],
     "CHANNEL_ICON": [
       "#000000"
     ],
     "CHAT_BACKGROUND": [
-      "#000000"
+      "#FFFFFF"
     ],
     "ICON_VOICE_SPEAKING": [
       "#80CC28"
     ],
     "REDESIGN_ACTIVITY_CARD_BACKGROUND": [
-      "#1E1E1E"
+      "#F5F5F5"
     ],
     "CARD_PRIMARY_BG": [
-      "#000000"
+      "#FFFFFF"
     ],
     "CARD_SECONDARY_BG": [
-      "#1E1E1E"
+      "#F5F5F5"
     ],
     "REDESIGN_BUTTON_SECONDARY_BACKGROUND": [
       "#00AFF0"
     ],
     "REDESIGN_CHAT_INPUT_BACKGROUND": [
-      "#1E1E1E"
+      "#00AFF0"
     ],
     "BG_BACKDROP": [
       "#000000B3"
@@ -228,7 +228,7 @@
       "QrCodeIcon": "#00AFF0",
       "PaintPaletteIcon": "#00AFF0",
       "ic_accessibility_24px": "#00AFF0",
-      "ic_add_super_reaction": "#00AFF0",
+      "ic_add_super_reaction": "#FFFFFF",
       "ic_arrow_back_24px": "#00AFF0",
       "ic_arrow_down": "#00AFF0",
       "ic_behavior_24px": "#00AFF0",
@@ -241,7 +241,7 @@
       "ic_image": "#00AFF0",
       "ic_jump_to_bottom_24px": "#00AFF0",
       "ic_launch": "#00AFF0",
-      "ic_mic_neutral": "#00AFF0",
+      "ic_mic_neutral": "#FFFFFF",
       "ic_minimize": "#00AFF0",
       "ic_notification_settings": "#00AFF0",
       "ic_notification_settings_24px": "#00AFF0",
@@ -252,7 +252,7 @@
       "ic_search_24px": "#00AFF0",
       "ic_search_items_24px": "#00AFF0",
       "ic_soundboard": "#00AFF0",
-      "ic_sticker_24px": "#00AFF0",
+      "ic_sticker_24px": "#FFFFFF",
       "ic_text_image_24px": "#00AFF0",
       "ic_theme_24px": "#00AFF0",
       "icon-search": "#00AFF0",
@@ -281,8 +281,8 @@
       "ic_edit_20px": "#80CC28",
       "ic_edit_24px": "#80CC28",
       "ic_gif_24px": "#80CC28",
-      "ic_gift": "#80CC28",
-      "ic_gift_24px": "#80CC28",
+      "ic_gift": "#FFFFFF",
+      "ic_gift_24px": "#FFFFFF",
       "ic_group_edit_18px": "#80CC28",
       "ic_header_members_add_24px": "#80CC28",
       "ic_invite": "#80CC28",
@@ -351,7 +351,7 @@
       "TrashIcon": "#E81123",
       "TriangleExclamationPointIcon": "#E81123",
       "StatusDND": "#E81123",
-      "AttachmentIcon": "#FFB900",
+      "AttachmentIcon": "#FFFFFF",
       "ChatMarkUnreadIcon": "#FFB900",
       "ClipboardListIcon": "#FFB900",
       "ShieldLockIcon": "#FFB900",
@@ -382,8 +382,8 @@
       "WrenchIcon": "#B3B3B3",
       "StatusOffline": "#B3B3B3",
       "INTERACTIVE_MUTED": "#B3B3B3",
-      "BoostGemIcon": "#8661C5",
-      "ic_add_super_reaction_purple": "#8661C5",
+      "BoostGemIcon": "#FFFFFF",
+      "ic_add_super_reaction_purple": "#FFFFFF",
       "NitroWheelIcon": "#8661C5",
       "LaptopPhoneIcon": "#8661C5",
       "StatusStreaming": "#8661C5",
