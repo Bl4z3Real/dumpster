@@ -1,0 +1,124 @@
+name: Estrai API da APK
+
+# Salva questo file come .github/workflows/estrai-api-da-apk.yml
+# Poi: Actions > "Estrai API da APK" > Run workflow
+# USA UN REPO PRIVATO: il report puo' contenere chiavi e token.
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_path:
+        description: "Percorso dell'APK nel repo (es. app.apk)"
+        required: false
+        default: "app.apk"
+      apk_url:
+        description: "Oppure URL diretto all'APK (ha la precedenza)"
+        required: false
+        default: ""
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    env:
+      APK_PATH: ${{ inputs.apk_path }}
+      APK_URL: ${{ inputs.apk_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Prepara APK
+        run: |
+          if [ -n "$APK_URL" ]; then
+            curl -fL -o target.apk "$APK_URL"
+          else
+            cp "$APK_PATH" target.apk
+          fi
+          ls -lh target.apk
+
+      - name: Installa jadx e apktool
+        run: |
+          mkdir -p tools
+          curl -fsL -o tools/jadx.zip https://github.com/skylot/jadx/releases/download/v1.5.0/jadx-1.5.0.zip
+          unzip -q tools/jadx.zip -d tools/jadx
+          curl -fsL -o tools/apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar
+
+      - name: Decompila
+        run: |
+          tools/jadx/bin/jadx -d out/jadx --show-bad-code target.apk || true
+          java -jar tools/apktool.jar d -f -o out/apktool target.apk
+
+      - name: Estrai endpoint e configurazioni
+        run: |
+          mkdir -p report
+          SRC="out/jadx/sources out/apktool/res out/apktool/assets out/apktool/smali*"
+          EXISTING=""
+          for d in $SRC; do [ -e "$d" ] && EXISTING="$EXISTING $d"; done
+
+          # 1) Tutti gli URL
+          grep -rhoE "https?://[A-Za-z0-9._~:/?#@!\$&'()*+,;=%{}-]+" $EXISTING 2>/dev/null \
+            | grep -vE "schemas.android.com|w3.org|apache.org|xmlpull.org|developer.android.com|github.com/square|ns.adobe.com" \
+            | sort -u > report/01_urls.txt
+
+          # 2) Endpoint Retrofit (@GET/@POST...) con la firma del metodo
+          grep -rnE -A3 '@(GET|POST|PUT|DELETE|PATCH|HEAD|HTTP|Url|Headers|Header)\(' out/jadx/sources 2>/dev/null \
+            > report/02_retrofit_endpoints.txt || true
+
+          # 3) Base URL / client HTTP / interceptor
+          grep -rnE 'baseUrl\(|BASE_URL|API_URL|API_BASE|SERVER_URL|OkHttpClient|addInterceptor|Authorization|Bearer |x-api-key|X-Api-Key' out/jadx/sources 2>/dev/null \
+            > report/03_base_url_e_auth.txt || true
+
+          # 4) Chiavi e config in strings.xml / BuildConfig
+          grep -rniE 'api[_-]?key|secret|token|client[_-]?id|merchant|google_api_key|google_app_id|firebase|gcm_defaultSenderId|default_web_client_id|maps' out/apktool/res/values*/strings.xml 2>/dev/null \
+            > report/04_chiavi_strings_xml.txt || true
+          find out/jadx/sources -name 'BuildConfig.java' -exec sh -c 'echo "== $1"; cat "$1"' _ {} \; \
+            > report/04b_buildconfig.txt 2>/dev/null || true
+
+          # 5) Pagamenti
+          grep -rniE 'pk_(live|test)_[A-Za-z0-9]+|stripe|paypal|braintree|razorpay|adyen|mollie|satispay|nexi|square|googlepay|google\.pay|billingclient|merchant' \
+            $EXISTING 2>/dev/null | grep -v '^Binary' | head -n 500 > report/05_pagamenti.txt || true
+
+          # 6) Ricerca / prodotti / carrello / ordini
+          grep -iE 'search|product|catalog|item|cart|basket|checkout|order|payment|login|auth|user|register' report/01_urls.txt \
+            > report/06_url_funzionali.txt || true
+
+          # 7) Manifest: meta-data, permessi, deep link
+          grep -nE 'meta-data|uses-permission|<data |android:host|android:scheme' out/apktool/AndroidManifest.xml \
+            > report/07_manifest.txt || true
+          cp out/apktool/res/xml/network_security_config.xml report/07b_network_security_config.xml 2>/dev/null || true
+
+          # 8) App ibride (Flutter / React Native / Cordova / Capacitor)
+          for so in out/apktool/lib/*/libapp.so; do
+            [ -f "$so" ] && strings -n 8 "$so" | grep -E 'https?://|/api/|/v[0-9]+/' | sort -u >> report/08_flutter.txt
+          done
+          for f in out/apktool/assets/index.android.bundle out/apktool/assets/www/*.js out/apktool/assets/public/*.js; do
+            [ -f "$f" ] && grep -oE 'https?://[A-Za-z0-9._~:/?#@!$&%=+-]+|"/api/[A-Za-z0-9_/-]+' "$f" | sort -u >> report/08_ibride_js.txt
+          done
+          cp out/apktool/assets/capacitor.config.json report/08_capacitor.json 2>/dev/null || true
+          cp out/apktool/assets/www/cordova.js report/08_cordova_marker.txt 2>/dev/null || true
+
+          # Riepilogo
+          {
+            echo "# Riepilogo analisi APK"
+            echo
+            for f in report/*; do
+              echo "- $(basename "$f"): $(wc -l < "$f") righe"
+            done
+            echo
+            echo "## URL trovati (primi 80)"
+            head -n 80 report/01_urls.txt
+          } > report/00_RIEPILOGO.md
+
+          cat report/00_RIEPILOGO.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Carica il report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-api-apk
+          path: |
+            report/
+            out/apktool/AndroidManifest.xml
+          retention-days: 7
