@@ -1,8 +1,8 @@
-name: Estrai API da APK
+name: Estrai Network Hosts da APK
 
-# Salva questo file come .github/workflows/estrai-api-da-apk.yml
-# Poi: Actions > "Estrai API da APK" > Run workflow
-# USA UN REPO PRIVATO: il report puo' contenere chiavi e token.
+# Salva come .github/workflows/estrai-api-da-apk.yml
+# Poi: Actions > "Estrai Network Hosts da APK" > Run workflow
+# Output: artifact "network-hosts" con un solo file, network_hosts.txt
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ on:
         default: ""
 
 jobs:
-  analyze:
+  hosts:
     runs-on: ubuntu-latest
     env:
       APK_PATH: ${{ inputs.apk_path }}
@@ -37,7 +37,6 @@ jobs:
           else
             cp "$APK_PATH" target.apk
           fi
-          ls -lh target.apk
 
       - name: Installa jadx e apktool
         run: |
@@ -51,74 +50,49 @@ jobs:
           tools/jadx/bin/jadx -d out/jadx --show-bad-code target.apk || true
           java -jar tools/apktool.jar d -f -o out/apktool target.apk
 
-      - name: Estrai endpoint e configurazioni
+      - name: Estrai solo i Network Hosts
         run: |
           mkdir -p report
-          SRC="out/jadx/sources out/apktool/res out/apktool/assets out/apktool/smali*"
-          EXISTING=""
-          for d in $SRC; do [ -e "$d" ] && EXISTING="$EXISTING $d"; done
+          python3 - <<'PY'
+          import os, re
 
-          # 1) Tutti gli URL
-          grep -rhoE "https?://[A-Za-z0-9._~:/?#@!\$&'()*+,;=%{}-]+" $EXISTING 2>/dev/null \
-            | grep -vE "schemas.android.com|w3.org|apache.org|xmlpull.org|developer.android.com|github.com/square|ns.adobe.com" \
-            | sort -u > report/01_urls.txt
+          noise = re.compile(
+              r"(schemas\.android\.com|w3\.org|apache\.org|xmlpull\.org|"
+              r"developer\.android\.com|ns\.adobe\.com|example\.(com|org)|"
+              r"localhost|\.(png|jpg|gif|js|css|xml|java|kt)$)"
+          )
+          valid = re.compile(r"^(?:[a-z0-9-]+\.)+[a-z]{2,}$|^\d{1,3}(?:\.\d{1,3}){3}$")
 
-          # 2) Endpoint Retrofit (@GET/@POST...) con la firma del metodo
-          grep -rnE -A3 '@(GET|POST|PUT|DELETE|PATCH|HEAD|HTTP|Url|Headers|Header)\(' out/jadx/sources 2>/dev/null \
-            > report/02_retrofit_endpoints.txt || true
+          url_re = re.compile(rb"https?://(?:[^/\s\"'<>@]*@)?([A-Za-z0-9.-]+)")
+          man_re = re.compile(rb'android:host="([A-Za-z0-9.*-]+)"')
+          nsc_re = re.compile(rb"<domain[^>]*>([A-Za-z0-9.-]+)</domain>")
 
-          # 3) Base URL / client HTTP / interceptor
-          grep -rnE 'baseUrl\(|BASE_URL|API_URL|API_BASE|SERVER_URL|OkHttpClient|addInterceptor|Authorization|Bearer |x-api-key|X-Api-Key' out/jadx/sources 2>/dev/null \
-            > report/03_base_url_e_auth.txt || true
+          hosts = set()
+          for root in ("out/jadx", "out/apktool"):
+              for dp, _, files in os.walk(root):
+                  for fn in files:
+                      p = os.path.join(dp, fn)
+                      try:
+                          if os.path.getsize(p) > 60_000_000:
+                              continue
+                          data = open(p, "rb").read()
+                      except OSError:
+                          continue
+                      for rx in (url_re, man_re, nsc_re):
+                          for m in rx.findall(data):
+                              h = m.decode("ascii", "ignore").lower().strip(".-*")
+                              if valid.match(h) and not noise.search(h):
+                                  hosts.add(h)
 
-          # 4) Chiavi e config in strings.xml / BuildConfig
-          grep -rniE 'api[_-]?key|secret|token|client[_-]?id|merchant|google_api_key|google_app_id|firebase|gcm_defaultSenderId|default_web_client_id|maps' out/apktool/res/values*/strings.xml 2>/dev/null \
-            > report/04_chiavi_strings_xml.txt || true
-          find out/jadx/sources -name 'BuildConfig.java' -exec sh -c 'echo "== $1"; cat "$1"' _ {} \; \
-            > report/04b_buildconfig.txt 2>/dev/null || true
+          with open("report/network_hosts.txt", "w") as f:
+              f.write("\n".join(sorted(hosts)) + "\n")
+          print(f"{len(hosts)} host trovati")
+          PY
+          cat report/network_hosts.txt
+          { echo '```'; cat report/network_hosts.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
-          # 5) Pagamenti
-          grep -rniE 'pk_(live|test)_[A-Za-z0-9]+|stripe|paypal|braintree|razorpay|adyen|mollie|satispay|nexi|square|googlepay|google\.pay|billingclient|merchant' \
-            $EXISTING 2>/dev/null | grep -v '^Binary' | head -n 500 > report/05_pagamenti.txt || true
-
-          # 6) Ricerca / prodotti / carrello / ordini
-          grep -iE 'search|product|catalog|item|cart|basket|checkout|order|payment|login|auth|user|register' report/01_urls.txt \
-            > report/06_url_funzionali.txt || true
-
-          # 7) Manifest: meta-data, permessi, deep link
-          grep -nE 'meta-data|uses-permission|<data |android:host|android:scheme' out/apktool/AndroidManifest.xml \
-            > report/07_manifest.txt || true
-          cp out/apktool/res/xml/network_security_config.xml report/07b_network_security_config.xml 2>/dev/null || true
-
-          # 8) App ibride (Flutter / React Native / Cordova / Capacitor)
-          for so in out/apktool/lib/*/libapp.so; do
-            [ -f "$so" ] && strings -n 8 "$so" | grep -E 'https?://|/api/|/v[0-9]+/' | sort -u >> report/08_flutter.txt
-          done
-          for f in out/apktool/assets/index.android.bundle out/apktool/assets/www/*.js out/apktool/assets/public/*.js; do
-            [ -f "$f" ] && grep -oE 'https?://[A-Za-z0-9._~:/?#@!$&%=+-]+|"/api/[A-Za-z0-9_/-]+' "$f" | sort -u >> report/08_ibride_js.txt
-          done
-          cp out/apktool/assets/capacitor.config.json report/08_capacitor.json 2>/dev/null || true
-          cp out/apktool/assets/www/cordova.js report/08_cordova_marker.txt 2>/dev/null || true
-
-          # Riepilogo
-          {
-            echo "# Riepilogo analisi APK"
-            echo
-            for f in report/*; do
-              echo "- $(basename "$f"): $(wc -l < "$f") righe"
-            done
-            echo
-            echo "## URL trovati (primi 80)"
-            head -n 80 report/01_urls.txt
-          } > report/00_RIEPILOGO.md
-
-          cat report/00_RIEPILOGO.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Carica il report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: report-api-apk
-          path: |
-            report/
-            out/apktool/AndroidManifest.xml
+          name: network-hosts
+          path: report/network_hosts.txt
           retention-days: 7
